@@ -1,5 +1,11 @@
 # Vortex — Symbiotic PC Optimizer
 
+> **[← écosystème NYX](https://lvs0.github.io/nyx/)** · [Roadmap NYX](https://lvs0.github.io/nyx/roadmap.html) · [Composants](https://lvs0.github.io/nyx/components.html)
+
+---
+
+# Vortex — Symbiotic PC Optimizer
+
 > *L'OS t'a oublié. On te rend la main.*
 
 Vortex est un optimiseur natif pour Windows 11. Un seul binaire Rust.
