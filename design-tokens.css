@@ -1,0 +1,251 @@
+/* ===========================================================
+   NYX — Brand System v0.1
+   autorisé pour tous les produits de l'écosystème.
+   Transmissible, modifiable par fork, jamais cassé en silence.
+   =========================================================== */
+
+:root {
+  /* ───────────────── PALETTE ───────────────── */
+  /* Inspiration:    nuit profonde + signaux quantiques */
+  /* Charte:         black profond / cyan-tonnerre / magenta-scan */
+  --nyx-void:        #05060a;
+  --nyx-ink:         #0b0d14;
+  --nyx-graphite:    #151925;
+  --nyx-slate:       #232938;
+  --nyx-mist:        #444c63;
+  --nyx-bone:        #b3b9cb;
+  --nyx-snow:        #e7ebf5;
+  --nyx-pure:        #ffffff;
+
+  --nyx-cyan:        #00f5d4;        /* signature: actions primaires */
+  --nyx-cyan-soft:   #58ffe6;
+  --nyx-magenta:     #ff3d8c;          /* signature: alertes, focus */
+  --nyx-violet:      #9d4edd;          /* signature: data, IA */
+  --nyx-amber:       #fcbf49;          /* warning, hardware */
+
+  --nyx-grad-main:   linear-gradient(135deg, #00f5d4 0%, #9d4edd 50%, #ff3d8c 100%);
+  --nyx-grad-cold:   linear-gradient(135deg, #00f5d4 0%, #1f6feb 100%);
+  --nyx-grad-warm:   linear-gradient(135deg, #ff3d8c 0%, #fcbf49 100%);
+
+  /* ─────────────── TYPOGRAPHIE ──────────────── */
+  --nyx-font-display: 'Fraunces', 'Space Grotesk', 'Times New Roman', serif;
+  --nyx-font-sans:    'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --nyx-font-mono:    'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+
+  --nyx-fs-hero:   clamp(48px, 7vw, 96px);
+  --nyx-fs-h1:     clamp(36px, 4.5vw, 64px);
+  --nyx-fs-h2:     clamp(28px, 3vw, 44px);
+  --nyx-fs-h3:     clamp(22px, 2vw, 30px);
+  --nyx-fs-body:   16px;
+  --nyx-fs-small:  13px;
+  --nyx-fs-tag:    11px;
+
+  --nyx-tracking-wide:  0.18em;
+  --nyx-tracking-base:  -0.01em;
+  --nyx-tracking-tight: -0.02em;
+
+  /* ───────────────── ESPACE ─────────────────── */
+  --nyx-space-1:   4px;
+  --nyx-space-2:   8px;
+  --nyx-space-3:   12px;
+  --nyx-space-4:   16px;
+  --nyx-space-5:   24px;
+  --nyx-space-6:   32px;
+  --nyx-space-7:   48px;
+  --nyx-space-8:   64px;
+  --nyx-space-9:   96px;
+  --nyx-space-10:  128px;
+  --nyx-space-11:  192px;
+
+  --nyx-r-xs:      4px;
+  --nyx-r-sm:      8px;
+  --nyx-r-md:      14px;
+  --nyx-r-lg:      24px;
+  --nyx-r-xl:      36px;
+  --nyx-r-pill:    999px;
+
+  /* ──────────────── BORDERS ─────────────────── */
+  --nyx-border-hair:   1px solid rgba(255,255,255,0.04);
+  --nyx-border-thin:   1px solid rgba(255,255,255,0.07);
+  --nyx-border-mid:    1px solid rgba(255,255,255,0.12);
+  --nyx-border-cyan:   1px solid rgba(0,245,212,0.25);
+  --nyx-border-glow:   0 0 0 1px rgba(0,245,212,0.25), 0 0 24px rgba(0,245,212,0.18);
+
+  /* ────────────── SHADOWS ──────────────────── */
+  --nyx-shadow-1:      0 1px 2px rgba(0,0,0,0.4);
+  --nyx-shadow-2:      0 6px 18px rgba(0,0,0,0.4);
+  --nyx-shadow-3:      0 16px 48px rgba(0,0,0,0.6);
+  --nyx-shadow-hero:   0 30px 120px rgba(0,245,212,0.15);
+  --nyx-shadow-mag:    0 30px 120px rgba(255,61,140,0.18);
+
+  /* ───────────── MOTION TOKENS ─────────────── */
+  /* Tous les timing/easing de l'écosystème */
+  --nyx-easing-soft:    cubic-bezier(0.16, 1, 0.3, 1);
+  --nyx-easing-snap:    cubic-bezier(0.4, 0, 0.2, 1);
+  --nyx-easing-bouncy:  cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --nyx-dur-instant:    80ms;
+  --nyx-dur-fast:       180ms;
+  --nyx-dur-base:       360ms;
+  --nyx-dur-slow:       720ms;
+  --nyx-dur-epic:       1400ms;
+
+  /* Force des springs (pour GSAP/Framer Motion consumers) */
+  --nyx-spring-stiff:   220;
+  --nyx-spring-damp:    24;
+  --nyx-spring-mass:    1;
+
+  /* ─────────────── ANIM PRIMITIVES ─────────── */
+  --nyx-pulse-tempo:    1.4s;
+  --nyx-drift-tempo:    6s;
+  --nyx-shimmer-span:   240%;
+
+  /* ──────────────── RADII ──────────────────── */
+  --nyx-r:              var(--nyx-r-md);
+}
+
+/* ─────────── ANIMATIONS PRIMITIVES ──────────── */
+@keyframes nyx-pulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.94); }
+}
+
+@keyframes nyx-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -6px, 0); }
+}
+
+@keyframes nyx-shimmer {
+  0%   { background-position: -50% 0; }
+  100% { background-position: 150% 0; }
+}
+
+@keyframes nyx-grow-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes nyx-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes nyx-grid-pan {
+  from { background-position: 0 0; }
+  to   { background-position: 60px 60px; }
+}
+
+/* ─────────── STYLES MONUMENTAUX ──────────── */
+
+body {
+  background: var(--nyx-void);
+  color: var(--nyx-snow);
+  font-family: var(--nyx-font-sans);
+}
+
+.nyx-display {
+  font-family: var(--nyx-font-display);
+  font-weight: 300;
+  letter-spacing: var(--nyx-tracking-tight);
+  line-height: 1.04;
+}
+
+.nyx-italic-gradient {
+  font-style: italic;
+  font-weight: 500;
+  background: var(--nyx-grad-main);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: nyx-shimmer 8s linear infinite;
+}
+
+.nyx-mono {
+  font-family: var(--nyx-font-mono);
+  letter-spacing: 0;
+}
+
+.nyx-tag {
+  display: inline-block;
+  font-family: var(--nyx-font-mono);
+  font-size: var(--nyx-fs-tag);
+  text-transform: uppercase;
+  letter-spacing: var(--nyx-tracking-wide);
+  color: var(--nyx-cyan);
+  padding: 6px 12px;
+  border-radius: var(--nyx-r-pill);
+  background: rgba(0,245,212,0.06);
+  border: 1px solid rgba(0,245,212,0.2);
+}
+
+.nyx-card {
+  background: linear-gradient(160deg, var(--nyx-graphite), var(--nyx-ink));
+  border: var(--nyx-border-thin);
+  border-radius: var(--nyx-r);
+  padding: var(--nyx-space-6);
+  transition: transform var(--nyx-dur-base) var(--nyx-easing-soft),
+              border-color var(--nyx-dur-fast) var(--nyx-easing-snap);
+}
+
+.nyx-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--nyx-border-cyan);
+}
+
+.nyx-btn {
+  display: inline-flex; align-items: center; gap: var(--nyx-space-2);
+  padding: var(--nyx-space-4) var(--nyx-space-6);
+  border-radius: var(--nyx-r-sm);
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all var(--nyx-dur-fast) var(--nyx-easing-soft);
+  border: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.nyx-btn--primary {
+  background: var(--nyx-cyan);
+  color: var(--nyx-void);
+  box-shadow: 0 4px 16px rgba(0,245,212,0.25);
+}
+
+.nyx-btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0,245,212,0.45);
+}
+
+.nyx-btn--ghost {
+  background: transparent;
+  border: var(--nyx-border-mid);
+  color: var(--nyx-snow);
+}
+
+.nyx-btn--ghost:hover { border-color: var(--nyx-cyan); color: var(--nyx-cyan); }
+
+.nyx-btn--electric {
+  background: var(--nyx-grad-main);
+  background-size: 200% 100%;
+  color: var(--nyx-void);
+  animation: nyx-shimmer 4s linear infinite paused;
+}
+
+.nyx-btn--electric:hover { animation-play-state: running; }
+
+/* ─────────── TOKENS DE TYPOGRAPHIE UTILITAIRES ─────────── */
+.nyx-h1 { font: 300 var(--nyx-fs-h1)/1.05 var(--nyx-font-display); letter-spacing: var(--nyx-tracking-tight); }
+.nyx-h2 { font: 300 var(--nyx-fs-h2)/1.1 var(--nyx-font-display);  letter-spacing: var(--nyx-tracking-base); }
+.nyx-h3 { font: 500 var(--nyx-fs-h3)/1.2 var(--nyx-font-sans); }
+
+.nyx-lede { font-size: 18px; color: var(--nyx-bone); line-height: 1.65; max-width: 64ch; }
+
+/* ─────────── UTILITY CLASSES ─────────── */
+.nyx-center { display: grid; place-items: center; }
+.nyx-monumental-grit {
+  background:
+    radial-gradient(800px circle at 20% 10%, rgba(0,245,212,0.05), transparent 60%),
+    radial-gradient(900px circle at 80% 90%, rgba(255,61,140,0.04), transparent 60%),
+    var(--nyx-void);
+}

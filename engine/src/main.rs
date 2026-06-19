@@ -5,8 +5,6 @@
 
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
-use std::time::Duration;
-use std::thread;
 use std::process;
 
 #[cfg(windows)]
@@ -33,20 +31,9 @@ fn main() {
             "info"       => run_info(),
             "protect"    => protect::run_protect(),
             "dash"       => run_dash(),
-            "help"|_     => print_help(),
+            "help"|_     => eprintln!("Vortex v0.1 — compile sous Windows 11. Voir build.cmd"),
         }
     }
-}
-
-fn print_help() {
-    println!("Vortex v0.1 — optimise Windows 11 selon ton matériel");
-    println!();
-    println!("Usage:");
-    println!("  vortex              Applique le profil adaptatif (recommandé)");
-    println!("  vortex info         Affiche la télémétrie du système");
-    println!("  vortex protect      Active le daemon léger de maintenance continue");
-    println!("  vortex dash         Lance le tableau de bord console temps réel");
-    println!("  vortex restore      Restaure les paramètres d'origine (sauvegardés)");
 }
 
 #[cfg(windows)]

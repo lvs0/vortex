@@ -6,6 +6,9 @@ use std::os::windows::ffi::OsStrExt;
 use std::ffi::OsStr;
 use std::process::Command;
 
+// Internal submodule for GPU priority rewriting
+mod gpu_priority;
+
 /// Est-ce qu'on tourne sous Windows ?
 pub fn is_windows() -> bool { cfg!(windows) }
 
@@ -68,12 +71,14 @@ pub fn optimize_paging_file() -> Result<()> {
 $cs = Get-WmiObject Win32_ComputerSystem
 Set-CimInstance -InputObject $cs -Property @{{AutomaticManagedPagefile = $false}}
 $pf = Get-WmiObject Win32_PageFileSetting
-$root = (Get-WmiObject Win32_PageFileUsage | Select-Object -First 1).Name -replace 'pagefile\.sys$'
-if (-not $root) {{ $root = 'C:\' }}
+$root = (Get-WmiObject Win32_PageFileUsage | Select-Object -First 1).Name -replace 'pagefile\\.sys$'
+if (-not $root) {{ $root = 'C:\\' }}
 $csi = Get-CimInstance Win32_PageFileSetting -ErrorAction SilentlyContinue
 if ($csi) {{ Set-CimInstance -InputObject $csi -Property @{{InitialSize = {init}; MaximumSize = {max}}} }} 
-else {{ Set-CimInstance -Namespace root\cimv2 -ClassName Win32_PageFileSetting -Property @{{Name = 'C:\pagefile.sys'; InitialSize = {init}; MaximumSize = {max}}} | Out-Null }}
-"#, init = paging_mb, max = paging_mb
+else {{ Set-CimInstance -Namespace root\\cimv2 -ClassName Win32_PageFileSetting -Property @{{Name = 'C:\\pagefile.sys'; InitialSize = {init}; MaximumSize = {max}}} | Out-Null }}
+"#,
+        init = paging_mb,
+        max = paging_mb
     );
     run_powershell(&script).map(|_| ())
 }
@@ -84,7 +89,7 @@ pub fn disable_memory_integrity(off: bool) -> Result<()> {
     let cmd = if off { 0 } else { 1 };
     let r = run_powershell(&format!(
         r#"
-$path = 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity'
+$path = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity'
 if (Test-Path $path) {{
   Set-ItemProperty -Path $path -Name 'Enabled' -Value {cmd}
 }}
@@ -96,7 +101,7 @@ if (Test-Path $path) {{
 // ────────────────────────────── Trimming dynamique ──────────────────────────────
 
 /// Compresse les working sets des processus en arrière-plan (RAM released).
-/// C'est le coeur "quantisation temps réel" que tu voulais.
+/// C'est le coeur \"quantisation temps réel\" que tu voulais.
 pub fn trim_background_apps() -> Result<()> {
     let mut sys = sysinfo::System::new_all();
     sys.refresh_processes();
@@ -136,24 +141,17 @@ pub fn trim_background_apps() -> Result<()> {
 pub fn enable_hags() -> Result<()> {
     let r = run_powershell(
         r#"
-$path = 'HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers'
+$path = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers'
 Set-ItemProperty -Path $path -Name 'HwSchMode' -Value 2
 "#,
     )?;
     if r.is_empty() { Ok(()) } else { Err(anyhow!(r)) }
 }
 
+/// Sets GPU priority for Games task to high performance values via direct Win32 registry API.
+/// Replaces the previous PowerShell implementation.
 pub fn set_gpu_priority_high() -> Result<()> {
-    let r = run_powershell(
-        r#"
-New-Item -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games' -Force | Out-Null
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games' -Name 'GPU Priority' -Value 8
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games' -Name 'Priority' -Value 6
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games' -Name 'Scheduling Category' -Value 'High'
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games' -Name 'SFIO Priority' -Value 'High'
-"#,
-    )?;
-    if r.is_empty() { Ok(()) } else { Err(anyhow!(r)) }
+    gpu_priority::set_gpu_priority_high()
 }
 
 // ────────────────────────────── Network ──────────────────────────────
@@ -162,13 +160,13 @@ pub fn disable_nagle() -> Result<()> {
     let r = run_powershell(
         r#"
 $paths = @(
-  'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces'
+  'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces'
 )
-Get-ChildItem $paths | ForEach-Object {{
+Get-Item $paths | ForEach-Object {
   Set-ItemProperty -Path $_.PsPath -Name 'TcpAckFrequency' -Value 1 -ErrorAction SilentlyContinue
   Set-ItemProperty -Path $_.PsPath -Name 'TCPNoDelay' -Value 1 -ErrorAction SilentlyContinue
   Set-ItemProperty -Path $_.PsPath -Name 'TcpDelAckTicks' -Value 0 -ErrorAction SilentlyContinue
-}}
+}
 "#,
     )?;
     if r.is_empty() { Ok(()) } else { Err(anyhow!(r)) }
@@ -177,7 +175,7 @@ Get-ChildItem $paths | ForEach-Object {{
 pub fn set_network_throttling_off() -> Result<()> {
     let r = run_powershell(
         r#"
-$path = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile'
+$path = 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile'
 Set-ItemProperty -Path $path -Name 'NetworkThrottlingIndex' -Value 0xffffffff
 "#,
     )?;
@@ -201,7 +199,7 @@ pub fn boost_process_priority(pid: u32) -> Result<()> {
 pub fn trim_superfetch() -> Result<()> {
     run_powershell(
         r#"
-$b = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters'
+$b = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters'
 Set-ItemProperty -Path $b -Name 'EnablePrefetcher' -Value 0 -ErrorAction SilentlyContinue
 Set-ItemProperty -Path $b -Name 'EnableSuperfetch' -Value 0 -ErrorAction SilentlyContinue
 "#,
@@ -212,7 +210,7 @@ Set-ItemProperty -Path $b -Name 'EnableSuperfetch' -Value 0 -ErrorAction Silentl
 pub fn disable_xbox_game_bar() -> Result<()> {
     run_powershell(
         r#"
-$h1 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR'
+$h1 = 'HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR'
 New-Item -Path $h1 -Force | Out-Null
 Set-ItemProperty -Path $h1 -Name 'AppCaptureEnabled' -Value 0
 Set-ItemProperty -Path $h1 -Name 'GameDVR_Enabled' -Value 0
@@ -226,15 +224,15 @@ Set-ItemProperty -Path $h1 -Name 'GameDVR_Enabled' -Value 0
 pub fn backup_current_state() -> Result<()> {
     let mut cmd = Command::new("reg");
     cmd.args([
-        "export", r"HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers",
-        r"C:\ProgramData\Vortex\backup_graphics.reg", "/y",
+        "export", r"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+        r"C:\\ProgramData\\Vortex\\backup_graphics.reg", "/y",
     ]);
     let _ = cmd.output();
 
     let mut cmd2 = Command::new("reg");
     cmd2.args([
-        "export", r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile",
-        r"C:\ProgramData\Vortex\backup_multimedia.reg", "/y",
+        "export", r"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+        r"C:\\ProgramData\\Vortex\\backup_multimedia.reg", "/y",
     ]);
     let _ = cmd2.output();
 
@@ -242,23 +240,23 @@ pub fn backup_current_state() -> Result<()> {
     let _ = run_powershell(
         r#"
 $active = powercfg /getactivescheme
-$active | Out-File C:\ProgramData\Vortex\backup_power.txt -Encoding utf8
-New-Item -Path 'C:\ProgramData\Vortex' -ItemType Directory -Force | Out-Null
-"#
+$active | Out-File C:\\ProgramData\\Vortex\\backup_power.txt -Encoding utf8
+New-Item -Path 'C:\\ProgramData\\Vortex' -ItemType Directory -Force | Out-Null
+"#,
     );
 
-    let _ = run_powershell("New-Item -Path 'C:\\ProgramData\\Vortex' -ItemType Directory -Force | Out-Null");
+    let _ = run_powershell("New-Item -Path 'C:\\\\ProgramData\\\\Vortex' -ItemType Directory -Force | Out-Null");
     Ok(())
 }
 
 pub fn restore_state() -> Result<()> {
     let _ = run_powershell(
         r#"
-reg import 'C:\ProgramData\Vortex\backup_graphics.reg' 2>$null
-reg import 'C:\ProgramData\Vortex\backup_multimedia.reg' 2>$null
-$plan = Get-Content 'C:\ProgramData\Vortex\backup_power.txt' -ErrorAction SilentlyContinue | Select-Object -First 1
+reg import 'C:\\ProgramData\\Vortex\\backup_graphics.reg' 2>$null
+reg import 'C:\\ProgramData\\Vortex\\backup_multimedia.reg' 2>$null
+$plan = Get-Content 'C:\\ProgramData\\Vortex\\backup_power.txt' -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($plan -match '([0-9a-f-]+)') { powercfg /setactive $Matches[1] }
-"#
+"#,
     );
     Ok(())
 }
