@@ -9,3 +9,6 @@ dist/
 .vscode/
 .idea/
 *.swp
+
+# Zoe nightly working notes
+NUIT-RAPPORT.md
